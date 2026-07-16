@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arkynIA Radar — Painel de Performance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#050510;
+    --bg-surface:#0D0B1C;
+    --bg-surface-2:#14112A;
+    --bg-surface-3:#1A1633;
+    --border:rgba(255,255,255,0.07);
+    --border-violet:rgba(139,92,246,0.28);
+    --violet:#5A2EE0;
+    --violet-light:#8B5CF6;
+    --btn-grad-a:#8B5CF6;
+    --violet-glow:rgba(90,46,224,0.35);
+    --glow-1:rgba(90,46,224,0.20);
+    --glow-2:rgba(139,92,246,0.12);
+    --mint:#34D399;
+    --rose:#FB7185;
+    --amber:#F5A623;
+    --meta-blue:#1877F2;
+    --google-blue:#4285F4;
+    --text-high:#F5F3FF;
+    --text-mid:#ABA6C4;
+    --text-low:#7B7496;
+    --chip-neutral:rgba(255,255,255,0.06);
+    --r-sm:10px;
+    --r-md:16px;
+    --r-lg:24px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+
+  [data-theme="light"]{
+    color-scheme:light;
+    --bg:#F7F6FC;
+    --bg-surface:#FFFFFF;
+    --bg-surface-2:#F1EFFA;
+    --bg-surface-3:#E8E2F8;
+    --border:rgba(20,10,45,0.10);
+    --border-violet:rgba(90,46,224,0.22);
+    --violet-light:#6D28D9;
+    --violet-glow:rgba(90,46,224,0.16);
+    --glow-1:rgba(90,46,224,0.10);
+    --glow-2:rgba(139,92,246,0.07);
+    --mint:#0E9F6E;
+    --rose:#E11D48;
+    --amber:#B45309;
+    --text-high:#191330;
+    --text-mid:#5C5578;
+    --text-low:#8B84A3;
+    --chip-neutral:rgba(20,10,45,0.06);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:
+      radial-gradient(ellipse 900px 520px at 12% -8%, var(--glow-1), transparent 60%),
+      radial-gradient(ellipse 760px 520px at 104% 4%, var(--glow-2), transparent 55%),
+      var(--bg);
+    background-attachment:fixed;
+    color:var(--text-high);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    transition:background-color .35s var(--ease),color .35s var(--ease);
+  }
+
+  h1,h2,h3,.font-display{font-family:'Space Grotesk',sans-serif;letter-spacing:-0.01em;}
+  .font-mono{font-family:'JetBrains Mono',monospace;}
+
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;background:none;border:none;color:inherit;}
+  svg{display:block;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+  :focus-visible{outline:2px solid var(--violet-light);outline-offset:3px;border-radius:4px;}
+
+  .page-wrap{max-width:1360px;margin:0 auto;padding:0 32px 64px;}
+
+  body,.card,.kpi-card,.platform-card,.insights-panel,.insight-card,.topbar,.period-menu,thead th,tbody td,.status-badge,.brand-tag{
+    transition:background-color .3s var(--ease),border-color .3s var(--ease),color .3s var(--ease),box-shadow .3s var(--ease);
+  }
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    max-width:1360px;margin:0 auto;
+    display:flex;align-items:center;gap:20px;
+    padding:26px 32px 30px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:11px;}
+  .brand-mark{width:34px;height:34px;flex-shrink:0;}
+  .brand-word{font-size:1.15rem;font-weight:700;color:var(--text-high);}
+  .brand-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.62rem;font-weight:600;letter-spacing:0.06em;
+    color:var(--violet-light);
+    background:rgba(139,92,246,0.14);
+    border:1px solid var(--border-violet);
+    padding:3px 8px;border-radius:100px;
+    text-transform:uppercase;
+  }
+  .topbar-divider{width:1px;height:26px;background:var(--border);margin:0 6px;}
+  .client-block{display:flex;flex-direction:column;gap:3px;}
+  .client-name{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1rem;color:var(--text-high);display:flex;align-items:center;gap:7px;}
+  .lock-icon{width:13px;height:13px;color:var(--text-low);flex-shrink:0;}
+  .client-sub{font-size:0.76rem;color:var(--text-low);}
+  .topbar-actions{display:flex;align-items:center;gap:12px;margin-left:auto;}
+
+  .theme-toggle{
+    width:38px;height:38px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--bg-surface-2);border:1px solid var(--border);
+    transition:border-color .18s var(--ease),background .18s var(--ease);
+  }
+  .theme-toggle:hover{border-color:var(--border-violet);background:var(--bg-surface-3);}
+  .theme-toggle svg{width:17px;height:17px;color:var(--text-mid);}
+  .icon-sun{display:none;}
+  [data-theme="light"] .icon-moon{display:none;}
+  [data-theme="light"] .icon-sun{display:block;}
+
+  .period-select{position:relative;}
+  .period-trigger{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg-surface-2);
+    border:1px solid var(--border);
+    padding:9px 14px;border-radius:100px;
+    font-size:0.82rem;font-weight:600;color:var(--text-high);
+    transition:border-color .18s var(--ease),background .18s var(--ease);
+  }
+  .period-trigger:hover{border-color:var(--border-violet);background:var(--bg-surface-3);}
+  .period-trigger svg{width:14px;height:14px;color:var(--text-low);transition:transform .2s var(--ease);}
+  .period-select.open .period-trigger svg{transform:rotate(180deg);}
+  .period-menu{
+    position:absolute;top:calc(100% + 8px);right:0;
+    background:var(--bg-surface-2);
+    border:1px solid var(--border);
+    border-radius:var(--r-sm);
+    padding:6px;min-width:172px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.35);
+    opacity:0;visibility:hidden;transform:translateY(-6px);
+    transition:opacity .16s var(--ease),transform .16s var(--ease),visibility .16s;
+    z-index:40;list-style:none;
+  }
+  .period-select.open .period-menu{opacity:1;visibility:visible;transform:translateY(0);}
+  .period-menu li{
+    padding:9px 11px;border-radius:7px;font-size:0.82rem;color:var(--text-mid);cursor:pointer;
+    transition:background .14s,color .14s;
+  }
+  .period-menu li:hover{background:rgba(139,92,246,0.12);color:var(--text-high);}
+  .period-menu li.selected{color:var(--violet-light);font-weight:600;}
+
+  .btn-export{
+    display:flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg,var(--btn-grad-a),var(--violet));
+    padding:9px 16px;border-radius:100px;
+    font-size:0.82rem;font-weight:700;color:#fff;
+    box-shadow:0 8px 22px -6px var(--violet-glow);
+    transition:transform .18s var(--ease),box-shadow .18s var(--ease);
+  }
+  .btn-export:hover{transform:translateY(-1px);box-shadow:0 10px 26px -6px var(--violet-glow);}
+  .btn-export svg{width:15px;height:15px;}
+
+  /* ---------- Hero KPIs ---------- */
+  .hero-kpis{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+    margin-bottom:20px;
+  }
+  .kpi-card{
+    background:var(--bg-surface);
+    border:1px solid var(--border);
+    border-radius:var(--r-lg);
+    padding:22px 22px 20px;
+    position:relative;overflow:hidden;
+    opacity:0;transform:translateY(14px);
+    animation:fadeInUp .6s var(--ease) forwards;
+  }
+  .kpi-card::before{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(220px 120px at 100% 0%, rgba(139,92,246,0.10), transparent 70%);
+    pointer-events:none;
+  }
+  .kpi-label{font-size:0.76rem;color:var(--text-low);font-weight:600;margin-bottom:12px;letter-spacing:0.01em;}
+  .kpi-value{font-family:'JetBrains Mono',monospace;font-size:1.9rem;font-weight:600;color:var(--text-high);letter-spacing:-0.02em;}
+  .kpi-foot{display:flex;align-items:center;gap:8px;margin-top:11px;flex-wrap:wrap;}
+  .kpi-delta{display:flex;align-items:center;gap:3px;font-size:0.78rem;font-weight:700;padding:3px 8px 3px 6px;border-radius:100px;}
+  .kpi-delta svg{width:12px;height:12px;}
+  .kpi-delta.up{color:var(--mint);background:rgba(52,211,153,0.12);}
+  .kpi-delta.down.good{color:var(--mint);background:rgba(52,211,153,0.12);}
+  .kpi-delta.down.bad{color:var(--rose);background:rgba(251,113,133,0.12);}
+  .kpi-period{font-size:0.74rem;color:var(--text-low);}
+  .kpi-caption{font-size:0.74rem;color:var(--text-low);margin-top:8px;}
+
+  /* ---------- Main grid ---------- */
+  .main-grid{display:grid;grid-template-columns:1fr 348px;gap:16px;align-items:start;}
+  .main-col{display:flex;flex-direction:column;gap:16px;min-width:0;}
+
+  .card{
+    background:var(--bg-surface);
+    border:1px solid var(--border);
+    border-radius:var(--r-lg);
+    padding:22px 24px 24px;
+    opacity:0;transform:translateY(14px);
+    animation:fadeInUp .6s var(--ease) forwards;
+  }
+  .card-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+  .card-title{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:600;}
+  .card-sub{font-size:0.76rem;color:var(--text-low);margin-top:3px;font-family:'Manrope',sans-serif;font-weight:500;}
+
+  /* ---------- Tabs (chart + table) ---------- */
+  .tab-row{display:flex;gap:4px;background:var(--bg-surface-2);padding:4px;border-radius:100px;border:1px solid var(--border);}
+  .tab-btn{padding:7px 14px;border-radius:100px;font-size:0.78rem;font-weight:600;color:var(--text-low);transition:background .16s var(--ease),color .16s var(--ease);}
+  .tab-btn.active{background:var(--violet);color:#fff;}
+  .tab-btn:not(.active):hover{color:var(--text-high);}
+
+  /* ---------- Chart ---------- */
+  .chart-legend{display:flex;gap:18px;margin-bottom:6px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:7px;font-size:0.78rem;color:var(--text-mid);}
+  .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .legend-line{width:14px;height:2px;border-radius:2px;flex-shrink:0;}
+  .chart-svg-wrap{width:100%;}
+  .chart-svg-wrap svg{width:100%;height:auto;overflow:visible;}
+  .chart-grid{stroke:var(--border);}
+  .chart-xlabels{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;}
+  .chart-xlabels span{font-size:0.72rem;color:var(--text-low);}
+
+  /* ---------- Platform summary cards ---------- */
+  .platform-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .platform-card{
+    background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);
+    padding:20px 22px 22px;
+    opacity:0;transform:translateY(14px);animation:fadeInUp .6s var(--ease) forwards;
+  }
+  .platform-head{display:flex;align-items:center;gap:9px;margin-bottom:16px;}
+  .platform-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .platform-dot.meta{background:var(--meta-blue);box-shadow:0 0 0 3px rgba(24,119,242,0.18);}
+  .platform-dot.google{background:var(--google-blue);box-shadow:0 0 0 3px rgba(66,133,244,0.18);}
+  .platform-name{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.92rem;}
+  .platform-share{margin-left:auto;font-size:0.74rem;color:var(--text-low);font-family:'JetBrains Mono',monospace;}
+  .platform-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px 10px;}
+  .pstat-label{font-size:0.7rem;color:var(--text-low);font-weight:600;margin-bottom:5px;}
+  .pstat-value{font-family:'JetBrains Mono',monospace;font-size:1.08rem;font-weight:600;}
+  .platform-foot{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:0.76rem;color:var(--text-low);}
+
+  /* ---------- Campaigns table ---------- */
+  .table-scroll{overflow-x:auto;margin:0 -2px;}
+  table{width:100%;border-collapse:collapse;min-width:760px;}
+  thead th{
+    text-align:left;font-size:0.68rem;font-weight:700;color:var(--text-low);
+    text-transform:uppercase;letter-spacing:0.04em;
+    padding:0 12px 10px;border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  thead th:first-child{padding-left:4px;}
+  tbody td{padding:14px 12px;font-size:0.84rem;border-bottom:1px solid var(--border);white-space:nowrap;}
+  tbody td:first-child{padding-left:4px;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr{transition:background .15s var(--ease);}
+  tbody tr:hover{background:rgba(139,92,246,0.06);}
+  .camp-name{font-weight:600;color:var(--text-high);white-space:normal;max-width:230px;}
+  .camp-name-wrap{display:flex;flex-direction:column;gap:2px;}
+  .camp-platform-tag{font-size:0.66rem;color:var(--text-low);font-weight:600;}
+  td.num{font-family:'JetBrains Mono',monospace;color:var(--text-mid);}
+  .status-badge{display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;padding:4px 9px;border-radius:100px;}
+  .status-badge.active{color:var(--mint);background:rgba(52,211,153,0.12);}
+  .status-badge.paused{color:var(--text-low);background:var(--chip-neutral);}
+  .status-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .campaign-row{display:none;}
+  .table-scroll[data-active="meta"] .campaign-row.tab-meta{display:table-row;}
+  .table-scroll[data-active="google"] .campaign-row.tab-google{display:table-row;}
+
+  /* ---------- Insights panel ---------- */
+  .side-col{position:sticky;top:24px;}
+  .insights-panel{
+    background:var(--bg-surface);border:1px solid var(--border-violet);border-radius:var(--r-lg);
+    padding:20px 20px 8px;
+    opacity:0;transform:translateY(14px);animation:fadeInUp .6s var(--ease) forwards;
+    box-shadow:0 0 0 1px var(--border-violet), 0 30px 60px -30px var(--violet-glow);
+  }
+  .insights-head{display:flex;align-items:center;gap:9px;margin-bottom:4px;}
+  .insights-head svg{width:16px;height:16px;color:var(--violet-light);}
+  .insights-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.98rem;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--mint);margin-left:auto;position:relative;flex-shrink:0;}
+  .live-dot::after{
+    content:'';position:absolute;inset:-5px;border-radius:50%;
+    border:1.5px solid var(--mint);opacity:0.6;
+    animation:pulseRing 2.2s ease-out infinite;
+  }
+  .insights-caption{font-size:0.74rem;color:var(--text-low);margin-bottom:18px;}
+
+  .insight-card{
+    position:relative;
+    padding:15px 14px 15px 16px;margin-bottom:12px;
+    background:var(--bg-surface-2);
+    border:1px solid var(--border);
+    border-radius:var(--r-md);
+    overflow:hidden;
+  }
+  .insight-card::before{
+    content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:var(--accent,var(--violet-light));
+  }
+  .insight-top{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+  .insight-icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(139,92,246,0.16);background:color-mix(in srgb, var(--accent,var(--violet-light)) 16%, transparent);}
+  .insight-icon svg{width:14px;height:14px;color:var(--accent,var(--violet-light));}
+  .insight-type{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--accent,var(--violet-light));}
+  .insight-time{margin-left:auto;font-size:0.68rem;color:var(--text-low);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+  .insight-title{font-size:0.87rem;font-weight:700;color:var(--text-high);margin-bottom:5px;line-height:1.35;}
+  .insight-text{font-size:0.79rem;color:var(--text-mid);line-height:1.5;margin-bottom:11px;}
+  .insight-tag{
+    display:inline-block;font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:600;
+    color:var(--accent,var(--violet-light));
+    background:rgba(139,92,246,0.12);
+    background:color-mix(in srgb, var(--accent,var(--violet-light)) 12%, transparent);
+    padding:3px 9px;border-radius:100px;
+  }
+
+  /* ---------- Footer ---------- */
+  .page-footer{
+    max-width:1360px;margin:8px auto 0;padding:22px 32px 0;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    border-top:1px solid var(--border);
+    font-size:0.76rem;color:var(--text-low);
+  }
+  .page-footer strong{color:var(--text-mid);font-weight:600;}
+
+  /* ---------- Animations ---------- */
+  @keyframes fadeInUp{to{opacity:1;transform:translateY(0);}}
+  @keyframes pulseRing{
+    0%{transform:scale(1);opacity:0.6;}
+    100%{transform:scale(2.6);opacity:0;}
+  }
+  .kpi-card:nth-child(1){animation-delay:.02s;}
+  .kpi-card:nth-child(2){animation-delay:.08s;}
+  .kpi-card:nth-child(3){animation-delay:.14s;}
+  .kpi-card:nth-child(4){animation-delay:.20s;}
+  .main-col .card:nth-child(1){animation-delay:.16s;}
+  .platform-card:nth-child(1){animation-delay:.22s;}
+  .platform-card:nth-child(2){animation-delay:.27s;}
+  .main-col .card.campaigns-card{animation-delay:.32s;}
+  .insights-panel{animation-delay:.24s;}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;}
+    .kpi-card,.card,.platform-card,.insights-panel{opacity:1;transform:none;}
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:1100px){
+    .main-grid{grid-template-columns:1fr;}
+    .side-col{position:static;}
+  }
+  @media (max-width:760px){
+    .hero-kpis{grid-template-columns:1fr 1fr;}
+    .platform-row{grid-template-columns:1fr;}
+    .topbar{padding:22px 20px 24px;}
+    .page-wrap{padding:0 20px 48px;}
+    .kpi-value{font-size:1.6rem;}
+  }
+  @media (max-width:480px){
+    .hero-kpis{grid-template-columns:1fr;}
+    .topbar-actions{width:100%;justify-content:space-between;margin-left:0;}
+    .client-block{display:none;}
+    .topbar-divider{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path d="M16 2 L28 9 V23 L16 30 L4 23 V9 Z" stroke="url(#logoGrad)" stroke-width="2"/>
+      <circle cx="16" cy="16" r="4.2" fill="url(#logoGrad)"/>
+      <defs>
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+          <stop offset="0" stop-color="#8B5CF6"/>
+          <stop offset="1" stop-color="#5A2EE0"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <span class="brand-word">arkynIA</span>
+    <span class="brand-tag">Radar · Tráfego</span>
+  </div>
+  <div class="topbar-divider"></div>
+  <div class="client-block">
+    <span class="client-name">
+      <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+      </svg>
+      Cliente confidencial
+    </span>
+    <span class="client-sub">Setor: Saúde &amp; Estética</span>
+  </div>
+  <div class="topbar-actions">
+    <div class="period-select" id="periodSelect">
+      <button class="period-trigger" id="periodTrigger" aria-haspopup="listbox" aria-expanded="false">
+        <span id="periodLabel">Últimos 30 dias</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8.5l7 7 7-7"/></svg>
+      </button>
+      <ul class="period-menu" id="periodMenu" role="listbox">
+        <li role="option" data-period="7">Últimos 7 dias</li>
+        <li role="option" data-period="14">Últimos 14 dias</li>
+        <li role="option" data-period="30" class="selected" aria-selected="true">Últimos 30 dias</li>
+      </ul>
+    </div>
+    <button class="btn-export" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3.5v11.5"/><path d="M7.5 11l4.5 4.5L16.5 11"/><path d="M4.5 18.5h15"/>
+      </svg>
+      Exportar
+    </button>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar tema claro/escuro" aria-pressed="false">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main class="page-wrap">
+
+  <!-- HERO KPIs -->
+  <section class="hero-kpis" aria-label="Indicadores principais" aria-live="polite">
+    <div class="kpi-card">
+      <div class="kpi-label">Investimento total</div>
+      <div class="kpi-value" id="kpiInvestido">R$ 24.680</div>
+      <div class="kpi-foot">
+        <span class="kpi-delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V6"/><path d="M6 11l6-6 6 6"/></svg><span id="kpiInvestidoDelta">12%</span></span>
+        <span class="kpi-period">vs. período anterior</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Leads gerados</div>
+      <div class="kpi-value" id="kpiLeads">187</div>
+      <div class="kpi-foot">
+        <span class="kpi-delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V6"/><path d="M6 11l6-6 6 6"/></svg><span id="kpiLeadsDelta">23%</span></span>
+        <span class="kpi-period">vs. período anterior</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Custo por lead (CPL)</div>
+      <div class="kpi-value" id="kpiCPL">R$ 131,98</div>
+      <div class="kpi-foot">
+        <span class="kpi-delta down good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v13"/><path d="M6 13l6 6 6-6"/></svg><span id="kpiCPLDelta">9%</span></span>
+        <span class="kpi-period">vs. período anterior</span>
+      </div>
+      <div class="kpi-caption">Meta interna: R$ 150,00</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">ROAS</div>
+      <div class="kpi-value" id="kpiROAS">4,2x</div>
+      <div class="kpi-foot">
+        <span class="kpi-delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V6"/><path d="M6 11l6-6 6 6"/></svg><span id="kpiROASDelta">0,6x</span></span>
+        <span class="kpi-period">vs. período anterior</span>
+      </div>
+      <div class="kpi-caption" id="kpiROASCaption">≈ R$ 103.656 em receita atribuída</div>
+    </div>
+  </section>
+
+  <div class="main-grid">
+    <div class="main-col">
+
+      <!-- CHART -->
+      <section class="card chart-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Desempenho da conta</div>
+            <div class="card-sub">Investimento vs. leads — <span id="chartSubtitle">últimos 30 dias</span></div>
+          </div>
+          <div class="tab-row" id="chartTabs">
+            <button class="tab-btn active" data-chart="combined">Combinado</button>
+            <button class="tab-btn" data-chart="meta">Meta Ads</button>
+            <button class="tab-btn" data-chart="google">Google Ads</button>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:var(--violet-light)"></span>Leads</span>
+          <span class="legend-item"><span class="legend-line" style="background:var(--mint)"></span>Investimento (R$)</span>
+        </div>
+        <div class="chart-svg-wrap">
+          <svg id="trendChart" viewBox="0 0 640 210" preserveAspectRatio="none" role="img" aria-label="Gráfico de tendência de leads e investimento no período selecionado">
+            <defs>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <line class="chart-grid" x1="0" y1="35" x2="640" y2="35" stroke-dasharray="3 5"/>
+            <line class="chart-grid" x1="0" y1="102" x2="640" y2="102" stroke-dasharray="3 5"/>
+            <line class="chart-grid" x1="0" y1="169" x2="640" y2="169" stroke-dasharray="3 5"/>
+            <path id="areaPath" fill="url(#areaGrad)" stroke="none"/>
+            <path id="leadsLine" fill="none" stroke="#8B5CF6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path id="spendLine" fill="none" stroke="#34D399" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4" opacity="0.85"/>
+          </svg>
+        </div>
+        <div class="chart-xlabels">
+          <span id="xLabel1">16 jun</span><span id="xLabel2">30 jun</span><span id="xLabel3">15 jul</span>
+        </div>
+      </section>
+
+      <!-- PLATFORM SUMMARIES -->
+      <section class="platform-row" aria-label="Resumo por plataforma">
+        <div class="platform-card">
+          <div class="platform-head">
+            <span class="platform-dot meta" aria-hidden="true"></span>
+            <span class="platform-name">Meta Ads</span>
+            <span class="platform-share" id="metaShare">57,6% da verba</span>
+          </div>
+          <div class="platform-stats">
+            <div><div class="pstat-label">Investido</div><div class="pstat-value" id="metaInvestido">R$ 14.220</div></div>
+            <div><div class="pstat-label">Leads</div><div class="pstat-value" id="metaLeads">98</div></div>
+            <div><div class="pstat-label">CPL médio</div><div class="pstat-value" id="metaCPL">R$ 145,10</div></div>
+            <div><div class="pstat-label">CTR médio</div><div class="pstat-value" id="metaCTR">2,5%</div></div>
+          </div>
+          <div class="platform-foot">4 campanhas ativas · 1 pausada</div>
+        </div>
+        <div class="platform-card">
+          <div class="platform-head">
+            <span class="platform-dot google" aria-hidden="true"></span>
+            <span class="platform-name">Google Ads</span>
+            <span class="platform-share" id="googleShare">42,4% da verba</span>
+          </div>
+          <div class="platform-stats">
+            <div><div class="pstat-label">Investido</div><div class="pstat-value" id="googleInvestido">R$ 10.460</div></div>
+            <div><div class="pstat-label">Leads</div><div class="pstat-value" id="googleLeads">89</div></div>
+            <div><div class="pstat-label">CPL médio</div><div class="pstat-value" id="googleCPL">R$ 117,53</div></div>
+            <div><div class="pstat-label">CTR médio</div><div class="pstat-value" id="googleCTR">3,9%</div></div>
+          </div>
+          <div class="platform-foot">4 campanhas ativas</div>
+        </div>
+      </section>
+
+      <!-- CAMPAIGNS TABLE -->
+      <section class="card campaigns-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Campanhas</div>
+            <div class="card-sub">Detalhamento por campanha — últimos 30 dias</div>
+          </div>
+          <div class="tab-row" id="tableTabs">
+            <button class="tab-btn active" data-table="meta">Meta Ads</button>
+            <button class="tab-btn" data-table="google">Google Ads</button>
+          </div>
+        </div>
+        <div class="table-scroll" id="tableScroll" data-active="meta">
+          <table>
+            <thead>
+              <tr>
+                <th>Campanha</th><th>Status</th><th>Investido</th><th>Impressões</th>
+                <th>Cliques</th><th>CTR</th><th>CPC</th><th>Leads</th><th>CPL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="campaign-row tab-meta">
+                <td class="camp-name"><div class="camp-name-wrap">Consulta Nutrológica – Conversão<span class="camp-platform-tag">Feed &amp; Reels</span></div></td>
+                <td><span class="status-badge active">Ativa</span></td>
+                <td class="num">R$ 5.240</td><td class="num">412.300</td><td class="num">8.940</td>
+                <td class="num">2,17%</td><td class="num">R$ 0,59</td><td class="num">52</td><td class="num">R$ 100,77</td>
+              </tr>
+              <tr class="campaign-row tab-meta">
+                <td class="camp-name"><div class="camp-name-wrap">Estética Avançada – Leads<span class="camp-platform-tag">Feed &amp; Reels</span></div></td>
+                <td><span class="status-badge active">Ativa</span></td>
+                <td class="num">R$ 4.180</td><td class="num">298.500</td><td class="num">6.210</td>
+                <td class="num">2,08%</td><td class="num">R$ 0,67</td><td class="num">28</td><td class="num">R$ 149,29</td>
+              </tr>
+              <tr class="campaign-row tab-meta">
+                <td class="camp-name"><div class="camp-name-wrap">Institucional – Stories<span class="camp-platform-tag">Stories</span></div></td>
+                <td><span class="status-badge active">Ativa</span></td>
+                <td class="num">R$ 2.100</td><td class="num">187.400</td><td class="num">3.890</td>
+                <td class="num">2,08%</td><td class="num">R$ 0,54</td><td class="num">11</td><td class="num">R$ 190,91</td>
+              </tr>
+              <tr class="campaign-row tab-meta">
+                <td class="camp-name"><div class="camp-name-wrap">Remarketing – Carrinho Quente<span class="camp-platform-tag">Feed</span></div></td>
+                <td><span class="status-badge active">Ativa</span></td>
+                <td class="num">R$ 1.680</td><td class="num">45.200</td><td class="num">2.140</td>
+                <td class="num">4,73%</td><td class="num">R$ 0,79</td><td class="num">7</td><td class="num">R$ 240,00</td>
+              </tr>
+              <tr class="campaign-row tab-meta">
+                <td class="camp-name"><div class="camp-name-wrap">Endocrinologia – Awareness<span class="camp-platform-tag">Feed &amp; Reels</span></div></td>
+                <td><span class="status-badge paused">Pausada</span></td>
+                <td class="num">R$ 1.020</td><td class="num">88.900</td><td class="num">1.320</td>
+                <td class="num">1,49%</td><td class="num">R$ 0,77</td><td class="num">0</td><td class="num">—</td>
+              </tr>
+              <tr class="campaign-row tab-google">
+                <td class="camp-name"><div class="camp-name-wrap">Pesquisa – Nutrólogo perto de mim<span class="camp-platform-tag">Rede de Pesquisa</span></div></td>
+                <td><span class="status-badge active">Ativa</span></td>
+                <td class="num">R$ 4.320</td><td class="num">28.400</td><td class="num">1.890</td>
+                <td class="num">6,65%</td><td class="num">R$ 2,29</td><td class="num">41</td><td class="num">R$ 105,37</td>
+              </tr>
+              <tr class="campaign-row tab-google">
+                <td class="camp-name"><div class="camp-name-wrap">Pesquisa – Emagrecimento Estética<span class="camp-platform-tag">Rede de Pesquisa</span></div></td>
+                <td><span class="status-badge active">Ativa</span></td>
+                <td class="num">R$ 3.180</td><td class="num">19.200</td><td class="num">1.240</td>
+                <td class="num">6,46%</td><td class="num">R$ 2,56</td><td class="num">29</td><td class="num">R$ 109,66</td>
+              </tr>
+              <tr class="campaign-row tab-google">
+                <td class="camp-name"><div class="camp-name-wrap">Performance Max – Conversões<span class="camp-platform-tag">PMax</span></div></td>
+                <td><span class="status-badge active">Ativa</span></td>
+                <td class="num">R$ 2.100</td><td class="num">156.000</td><td class="num">3.400</td>
+                <td class="num">2,18%</td><td class="num">R$ 0,62</td><td class="num">15</td><td class="num">R$ 140,00</td>
+              </tr>
+              <tr class="campaign-row tab-google">
+                <td class="camp-name"><div class="camp-name-wrap">Remarketing Display<span class="camp-platform-tag">Rede de Display</span></div></td>
+                <td><span class="status-badge active">Ativa</span></td>
+                <td class="num">R$ 860</td><td class="num">210.000</td><td class="num">980</td>
+                <td class="num">0,47%</td><td class="num">R$ 0,88</td><td class="num">4</td><td class="num">R$ 215,00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- INSIGHTS SIDEBAR -->
+    <aside class="side-col">
+      <section class="insights-panel" aria-label="Insights gerados por IA">
+        <div class="insights-head">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5c.5 3.7 1.5 5.7 3.2 7.4 1.7 1.7 3.7 2.7 7.4 3.2-3.7.5-5.7 1.5-7.4 3.2-1.7 1.7-2.7 3.7-3.2 7.4-.5-3.7-1.5-5.7-3.2-7.4C7.1 14.6 5.1 13.6 1.4 13.1c3.7-.5 5.7-1.5 7.4-3.2C10.5 8.2 11.5 6.2 12 2.5z"/></svg>
+          <span class="insights-title">Insights da IA</span>
+          <span class="live-dot" aria-hidden="true"></span>
+        </div>
+        <div class="insights-caption">Analisado automaticamente a cada 6 horas</div>
+
+        <article class="insight-card" style="--accent:var(--violet-light)">
+          <div class="insight-top">
+            <span class="insight-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></span>
+            <span class="insight-type">Oportunidade</span>
+            <span class="insight-time">há 3h</span>
+          </div>
+          <div class="insight-title">CPL 24% abaixo da média da conta</div>
+          <div class="insight-text">"Consulta Nutrológica – Conversão" está entregando leads mais baratos que o normal. Aumentar o orçamento em R$ 50/dia tende a manter a eficiência e gerar mais leads por semana.</div>
+          <span class="insight-tag">+8 leads/sem (estimado)</span>
+        </article>
+
+        <article class="insight-card" style="--accent:var(--rose)">
+          <div class="insight-top">
+            <span class="insight-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 L22 20.5 L2 20.5 Z"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg></span>
+            <span class="insight-type">Atenção</span>
+            <span class="insight-time">hoje, 09:14</span>
+          </div>
+          <div class="insight-title">Queda de CTR nos criativos de Stories</div>
+          <div class="insight-text">O CTR de "Institucional – Stories" caiu 18% nos últimos 7 dias. Os criativos já rodam há 23 dias — vale testar novas variações essa semana.</div>
+          <span class="insight-tag">CTR −18%</span>
+        </article>
+
+        <article class="insight-card" style="--accent:var(--amber)">
+          <div class="insight-top">
+            <span class="insight-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 20c0-3.6 2.9-6 5.5-6s5.5 2.4 5.5 6"/><circle cx="17" cy="9.5" r="2.3"/><path d="M15.3 14.2c2.2.3 4.3 2.2 4.7 5.3"/></svg></span>
+            <span class="insight-type">Padrão identificado</span>
+            <span class="insight-time">ontem, 18:40</span>
+          </div>
+          <div class="insight-title">Mulheres de 35–44 anos convertem 2,3x mais</div>
+          <div class="insight-text">Esse público está bem acima da média em "Estética Avançada – Leads". Vale realocar parte da verba de faixas etárias menos eficientes pra essa segmentação.</div>
+          <span class="insight-tag">2,3x conversão</span>
+        </article>
+
+        <article class="insight-card" style="--accent:var(--amber)">
+          <div class="insight-top">
+            <span class="insight-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
+            <span class="insight-type">Padrão identificado</span>
+            <span class="insight-time">ontem, 14:02</span>
+          </div>
+          <div class="insight-title">68% das conversões do Google Ads são entre 9h–12h</div>
+          <div class="insight-text">Ajustar os lances pra priorizar esse intervalo pode reduzir o CPA sem perder volume de leads.</div>
+          <span class="insight-tag">CPA −15% (potencial)</span>
+        </article>
+
+        <article class="insight-card" style="--accent:var(--mint)">
+          <div class="insight-top">
+            <span class="insight-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16.3 9"/></svg></span>
+            <span class="insight-type">Meta atingida</span>
+            <span class="insight-time">2 dias atrás</span>
+          </div>
+          <div class="insight-title">Meta mensal de leads batida com 6 dias de antecedência</div>
+          <div class="insight-text">A campanha de remarketing "Carrinho Quente" já entregou o volume previsto pro mês, mantendo ROAS de 5,8x.</div>
+          <span class="insight-tag">ROAS 5,8x</span>
+        </article>
+
+      </section>
+    </aside>
+  </div>
+</main>
+
+<footer class="page-footer">
+  <span>Painel gerado por <strong>arkynIA tech</strong> · dados ilustrativos para demonstração</span>
+  <span>Última atualização: 15 jul 2026, 08:00</span>
+</footer>
+
+<script>
+(function(){
+  // ---------- Theme toggle ----------
+  var themeToggle = document.getElementById('themeToggle');
+  var htmlEl = document.documentElement;
+  themeToggle.addEventListener('click', function(){
+    var isLight = htmlEl.getAttribute('data-theme') === 'light';
+    htmlEl.setAttribute('data-theme', isLight ? 'dark' : 'light');
+    themeToggle.setAttribute('aria-pressed', isLight ? 'false' : 'true');
+  });
+
+  // ---------- Period data (7 / 14 / 30 dias) ----------
+  var periodData = {
+    7:  { investido:'R$ 5.780',  investidoDelta:'19%', leads:'51',  leadsDelta:'34%',
+          cpl:'R$ 113,33', cplDelta:'15%', roas:'4,8x', roasDelta:'0,9x',
+          roasCaption:'≈ R$ 27.744 em receita atribuída',
+          metaInvestido:'R$ 3.150', metaLeads:'26', metaCPL:'R$ 121,15', metaCTR:'2,7%', metaShare:'54,5% da verba',
+          googleInvestido:'R$ 2.630', googleLeads:'25', googleCPL:'R$ 105,20', googleCTR:'4,3%', googleShare:'45,5% da verba',
+          chartLabel:'últimos 7 dias', xLabels:['9 jul','12 jul','15 jul'] },
+    14: { investido:'R$ 11.480', investidoDelta:'16%', leads:'93',  leadsDelta:'29%',
+          cpl:'R$ 123,44', cplDelta:'12%', roas:'4,5x', roasDelta:'0,7x',
+          roasCaption:'≈ R$ 51.660 em receita atribuída',
+          metaInvestido:'R$ 6.520', metaLeads:'48', metaCPL:'R$ 135,83', metaCTR:'2,6%', metaShare:'56,8% da verba',
+          googleInvestido:'R$ 4.960', googleLeads:'45', googleCPL:'R$ 110,22', googleCTR:'4,1%', googleShare:'43,2% da verba',
+          chartLabel:'últimos 14 dias', xLabels:['1 jul','8 jul','15 jul'] },
+    30: { investido:'R$ 24.680', investidoDelta:'12%', leads:'187', leadsDelta:'23%',
+          cpl:'R$ 131,98', cplDelta:'9%', roas:'4,2x', roasDelta:'0,6x',
+          roasCaption:'≈ R$ 103.656 em receita atribuída',
+          metaInvestido:'R$ 14.220', metaLeads:'98', metaCPL:'R$ 145,10', metaCTR:'2,5%', metaShare:'57,6% da verba',
+          googleInvestido:'R$ 10.460', googleLeads:'89', googleCPL:'R$ 117,53', googleCTR:'3,9%', googleShare:'42,4% da verba',
+          chartLabel:'últimos 30 dias', xLabels:['16 jun','30 jun','15 jul'] }
+  };
+
+  var currentPeriod = 30;
+  var currentChartTab = 'combined';
+
+  function setText(id, value){
+    var el = document.getElementById(id);
+    if(el) el.textContent = value;
+  }
+
+  function applyPeriod(n){
+    var d = periodData[n];
+    if(!d) return;
+    currentPeriod = n;
+    setText('kpiInvestido', d.investido);
+    setText('kpiInvestidoDelta', d.investidoDelta);
+    setText('kpiLeads', d.leads);
+    setText('kpiLeadsDelta', d.leadsDelta);
+    setText('kpiCPL', d.cpl);
+    setText('kpiCPLDelta', d.cplDelta);
+    setText('kpiROAS', d.roas);
+    setText('kpiROASDelta', d.roasDelta);
+    setText('kpiROASCaption', d.roasCaption);
+    setText('metaInvestido', d.metaInvestido);
+    setText('metaLeads', d.metaLeads);
+    setText('metaCPL', d.metaCPL);
+    setText('metaCTR', d.metaCTR);
+    setText('metaShare', d.metaShare);
+    setText('googleInvestido', d.googleInvestido);
+    setText('googleLeads', d.googleLeads);
+    setText('googleCPL', d.googleCPL);
+    setText('googleCTR', d.googleCTR);
+    setText('googleShare', d.googleShare);
+    setText('chartSubtitle', d.chartLabel);
+    setText('xLabel1', d.xLabels[0]);
+    setText('xLabel2', d.xLabels[1]);
+    setText('xLabel3', d.xLabels[2]);
+    renderChart(currentChartTab, n);
+  }
+
+  // ---------- Period dropdown ----------
+  var periodSelect = document.getElementById('periodSelect');
+  var periodTrigger = document.getElementById('periodTrigger');
+  var periodMenu = document.getElementById('periodMenu');
+  var periodLabel = document.getElementById('periodLabel');
+
+  periodTrigger.addEventListener('click', function(e){
+    e.stopPropagation();
+    var isOpen = periodSelect.classList.toggle('open');
+    periodTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+  periodMenu.querySelectorAll('li').forEach(function(li){
+    li.addEventListener('click', function(){
+      periodMenu.querySelectorAll('li').forEach(function(el){el.classList.remove('selected');el.removeAttribute('aria-selected');});
+      li.classList.add('selected');
+      li.setAttribute('aria-selected','true');
+      periodLabel.textContent = li.textContent;
+      periodSelect.classList.remove('open');
+      periodTrigger.setAttribute('aria-expanded','false');
+      applyPeriod(parseInt(li.getAttribute('data-period'), 10));
+    });
+  });
+  document.addEventListener('click', function(){
+    periodSelect.classList.remove('open');
+    periodTrigger.setAttribute('aria-expanded','false');
+  });
+
+  // ---------- Table tabs (Meta / Google — fixo em 30 dias) ----------
+  var tableTabs = document.getElementById('tableTabs');
+  var tableScroll = document.getElementById('tableScroll');
+  tableTabs.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      tableTabs.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      tableScroll.setAttribute('data-active', btn.getAttribute('data-table'));
+    });
+  });
+
+  // ---------- Chart: dados diários determinísticos (30 dias), fatiados por período ----------
+  var days = Array.from({length:30}, function(_,i){return i+1;});
+  var leadsMeta = days.map(function(d){return Math.max(1, Math.round(2 + d*0.12 + Math.sin(d*1.1)*1.3));});
+  var leadsGoogle = days.map(function(d){return Math.max(1, Math.round(1.8 + d*0.11 + Math.cos(d*0.9)*1.1));});
+  var leadsCombined = days.map(function(d,i){return leadsMeta[i] + leadsGoogle[i];});
+  var spendMeta = days.map(function(d){return Math.round(300 + d*11 + Math.sin(d*0.8)*55);});
+  var spendGoogle = days.map(function(d){return Math.round(220 + d*8.5 + Math.cos(d*0.85)*45);});
+  var spendCombined = days.map(function(d,i){return spendMeta[i] + spendGoogle[i];});
+
+  var datasets = {
+    combined: {leads: leadsCombined, spend: spendCombined},
+    meta: {leads: leadsMeta, spend: spendMeta},
+    google: {leads: leadsGoogle, spend: spendGoogle}
+  };
+
+  var CH_W = 640, CH_H = 210, PAD_TOP = 14, PAD_BOTTOM = 14;
+
+  function computePoints(data){
+    var min = Math.min.apply(null, data);
+    var max = Math.max.apply(null, data);
+    var range = (max - min) || 1;
+    var stepX = CH_W / (data.length - 1 || 1);
+    return data.map(function(v,i){
+      var x = i * stepX;
+      var y = PAD_TOP + (CH_H - PAD_TOP - PAD_BOTTOM) * (1 - (v - min) / range);
+      return [x,y];
+    });
+  }
+
+  function smoothPath(points){
+    if(points.length < 2) return '';
+    var d = 'M' + points[0][0].toFixed(1) + ',' + points[0][1].toFixed(1);
+    for(var i=0; i<points.length-1; i++){
+      var p0 = points[i===0 ? i : i-1];
+      var p1 = points[i];
+      var p2 = points[i+1];
+      var p3 = points[i+2 < points.length ? i+2 : i+1];
+      var c1x = p1[0] + (p2[0]-p0[0])/6;
+      var c1y = p1[1] + (p2[1]-p0[1])/6;
+      var c2x = p2[0] - (p3[0]-p1[0])/6;
+      var c2y = p2[1] - (p3[1]-p1[1])/6;
+      d += ' C' + c1x.toFixed(1) + ',' + c1y.toFixed(1) + ' ' + c2x.toFixed(1) + ',' + c2y.toFixed(1) + ' ' + p2[0].toFixed(1) + ',' + p2[1].toFixed(1);
+    }
+    return d;
+  }
+
+  var leadsLineEl = document.getElementById('leadsLine');
+  var spendLineEl = document.getElementById('spendLine');
+  var areaPathEl = document.getElementById('areaPath');
+
+  function renderChart(key, periodDays){
+    var ds = datasets[key];
+    var n = periodDays || 30;
+    var leadsSlice = ds.leads.slice(-n);
+    var spendSlice = ds.spend.slice(-n);
+    var leadPts = computePoints(leadsSlice);
+    var spendPts = computePoints(spendSlice);
+    var leadPath = smoothPath(leadPts);
+    var spendPath = smoothPath(spendPts);
+    leadsLineEl.setAttribute('d', leadPath);
+    spendLineEl.setAttribute('d', spendPath);
+    var last = leadPts[leadPts.length-1];
+    var first = leadPts[0];
+    areaPathEl.setAttribute('d', leadPath + ' L' + last[0].toFixed(1) + ',' + (CH_H-PAD_BOTTOM) + ' L' + first[0].toFixed(1) + ',' + (CH_H-PAD_BOTTOM) + ' Z');
+  }
+
+  var chartTabs = document.getElementById('chartTabs');
+  chartTabs.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      chartTabs.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      currentChartTab = btn.getAttribute('data-chart');
+      renderChart(currentChartTab, currentPeriod);
+    });
+  });
+
+  // ---------- Init ----------
+  applyPeriod(30);
+})();
+</script>
+
+</body>
+</html>
